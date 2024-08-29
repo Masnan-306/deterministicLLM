@@ -1,0 +1,26 @@
+# chat-service/templates/deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "chat-service.fullname" . }}
+  labels:
+    app: {{ include "chat-service.name" . }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      app: {{ include "chat-service.name" . }}
+  template:
+    metadata:
+      labels:
+        app: {{ include "chat-service.name" . }}
+    spec:
+      nodeSelector:
+        agentpool: {{ .Values.nodeSelector.agentpool | quote }}
+      imagePullSecrets:
+        - name: {{ .Values.imagePullSecret }}
+      containers:
+        - name: {{ .Chart.Name }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          ports:
+            - containerPort: 8000

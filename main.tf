@@ -2,6 +2,7 @@
 
 provider "azurerm" {
   features {}
+  subscription_id = "36577d1d-abda-49a6-86c8-67d9341c45a5"
 }
 
 # Resource group for AKS
@@ -34,114 +35,121 @@ resource "azurerm_kubernetes_cluster" "aks_cluster" {
 
 # Additional Node Pool 1
 resource "azurerm_kubernetes_cluster_node_pool" "pool_1" {
-  name                = "pool1"
-  kubernetes_cluster_id = azurerm_kubernetes_cluster.aks_cluster.id
-  vm_size             = "Standard_DS3_v2"  # Change this to another instance type
-  node_count          = 1
-  max_pods            = 30
-  os_type             = "Linux"
-  mode                = "User"
-  enable_auto_scaling = false
+  name                   = "pool1"
+  kubernetes_cluster_id  = azurerm_kubernetes_cluster.aks_cluster.id
+  vm_size                = "Standard_DS3_v2"  # Change this to another instance type
+  node_count             = 1
+  max_pods               = 30
+  os_type                = "Linux"
+  mode                   = "User"
 }
 
 # Additional Node Pool 2
 resource "azurerm_kubernetes_cluster_node_pool" "pool_2" {
-  name                = "pool2"
-  kubernetes_cluster_id = azurerm_kubernetes_cluster.aks_cluster.id
-  vm_size             = "Standard_F4s_v2"  # Another different instance type
-  node_count          = 1
-  max_pods            = 30
-  os_type             = "Linux"
-  mode                = "User"
-  enable_auto_scaling = false
+  name                   = "pool2"
+  kubernetes_cluster_id  = azurerm_kubernetes_cluster.aks_cluster.id
+  vm_size                = "Standard_F4s_v2"  # Another different instance type
+  node_count             = 1
+  max_pods               = 30
+  os_type                = "Linux"
+  mode                   = "User"
 }
 
 # Output Kubernetes Config
 output "kube_config" {
-  value = azurerm_kubernetes_cluster.aks_cluster.kube_config_raw
+  sensitive = true
+  value     = azurerm_kubernetes_cluster.aks_cluster.kube_config_raw
 }
 
-# Helm deployment of the service on each node pool using node selector
+# Configure Kubernetes provider using the kubeconfig
+provider "kubernetes" {
+  config_path = "~/.kube_config.yaml"
+}
+
+# Configure Helm provider using the same kubeconfig
+provider "helm" {
+  kubernetes {
+    config_path = "~/.kube_config.yaml"
+  }
+}
+
+# Save kubeconfig to a local file to use with Kubernetes and Helm providers
+resource "local_file" "kubeconfig" {
+  content  = azurerm_kubernetes_cluster.aks_cluster.kube_config_raw
+  filename = "~/.kube_config.yaml"
+}
+# Helm deployment of the service on default node pool using the local chart
 resource "helm_release" "chat_service_default" {
-  name       = "chat-service-default"
-  repository = "https://charts.bitnami.com/bitnami"  # Update if your Helm chart repository is different
-  chart      = "chat-service-chart"                 # Replace with your actual chart name
+  name  = "chat-service-default"
+  chart = "./chat-service"  # Path to your local Helm chart
 
   set {
-    name  = "image.repository"
-    value = "deterministicchatservicee.azurecr.io/your-service-image"  # Set your image path
+    name  = "nodeSelector.agentpool"
+    value = "default"  # Matches the label for the default node pool
   }
 
-  set {
-    name  = "replicaCount"
-    value = "1"
-  }
-
-  set {
-    name  = "service.type"
-    value = "LoadBalancer"
-  }
-
-  set {
-    name  = "nodeSelector.nodepool"
-    value = "default"
-  }
-
-  depends_on = [azurerm_kubernetes_cluster.aks_cluster]
+  depends_on = [azurerm_kubernetes_cluster.aks_cluster, local_file.kubeconfig]
 }
 
+# Helm deployment of the service on pool1 node pool using the local chart
 resource "helm_release" "chat_service_pool1" {
-  name       = "chat-service-pool1"
-  repository = "https://charts.bitnami.com/bitnami"  # Update if your Helm chart repository is different
-  chart      = "chat-service-chart"                 # Replace with your actual chart name
+  name  = "chat-service-pool1"
+  chart = "./chat-service"  # Path to your local Helm chart
 
   set {
-    name  = "image.repository"
-    value = "deterministicchatservicee.azurecr.io/your-service-image"  # Set your image path
+    name  = "nodeSelector.agentpool"
+    value = "pool1"  # Matches the label for node pool 1, assuming pool1 nodes are labeled similarly
   }
 
-  set {
-    name  = "replicaCount"
-    value = "1"
-  }
-
-  set {
-    name  = "service.type"
-    value = "LoadBalancer"
-  }
-
-  set {
-    name  = "nodeSelector.nodepool"
-    value = "pool1"
-  }
-
-  depends_on = [azurerm_kubernetes_cluster_node_pool.pool_1]
+  depends_on = [azurerm_kubernetes_cluster_node_pool.pool_1, local_file.kubeconfig]
 }
 
+# Helm deployment of the service on pool2 node pool using the local chart
 resource "helm_release" "chat_service_pool2" {
-  name       = "chat-service-pool2"
-  repository = "https://charts.bitnami.com/bitnami"  # Update if your Helm chart repository is different
-  chart      = "chat-service-chart"                 # Replace with your actual chart name
+  name  = "chat-service-pool2"
+  chart = "./chat-service"  # Path to your local Helm chart
 
   set {
-    name  = "image.repository"
-    value = "deterministicchatservicee.azurecr.io/your-service-image"  # Set your image path
+    name  = "nodeSelector.agentpool"
+    value = "pool2"  # Matches the label for node pool 2, assuming pool2 nodes are labeled similarly
   }
 
-  set {
-    name  = "replicaCount"
-    value = "1"
+  depends_on = [azurerm_kubernetes_cluster_node_pool.pool_2, local_file.kubeconfig]
+}
+
+resource "kubernetes_secret" "acr_auth" {
+  metadata {
+    name      = "acr-auth-secret"
+    namespace = "default"
   }
 
-  set {
-    name  = "service.type"
-    value = "LoadBalancer"
-  }
+  type = "kubernetes.io/dockerconfigjson"
 
-  set {
-    name  = "nodeSelector.nodepool"
-    value = "pool2"
+  data = {
+    ".dockerconfigjson" = jsonencode({
+      auths = {
+        "deterministicchatservicee.azurecr.io" = {
+          "username" = var.acr_username
+          "password" = var.acr_password
+          "email"    = var.acr_email
+          "auth"     = base64encode("${var.acr_username}:${var.acr_password}")
+        }
+      }
+    })
   }
+}
 
-  depends_on = [azurerm_kubernetes_cluster_node_pool.pool_2]
+variable "acr_username" {
+  description = "Azure Container Registry username"
+  sensitive   = true
+}
+
+variable "acr_password" {
+  description = "Azure Container Registry password"
+  sensitive   = true
+}
+
+variable "acr_email" {
+  description = "Email associated with Azure Container Registry"
+  sensitive   = true
 }

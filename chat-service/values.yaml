@@ -1,0 +1,16 @@
+# chat-service/values.yaml
+image:
+  repository: deterministicchatservicee.azurecr.io/chat_service
+  tag: v1.0
+
+imagePullSecret: acr-auth-secret
+
+replicaCount: 1
+
+service:
+  type: LoadBalancer
+  port: 80
+  targetPort: 8000
+
+nodeSelector:
+  agentpool: default
