@@ -6,6 +6,7 @@ llm = Llama.from_pretrained(
     filename="tinyllama-2-1b-miniguanaco.Q2_K.gguf",
 )
 
+
 # Function to generate responses
 def chat_with_model(message):
     llm.reset()
