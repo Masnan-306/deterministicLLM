@@ -33,28 +33,6 @@ resource "azurerm_kubernetes_cluster" "aks_cluster" {
   }
 }
 
-# Additional Node Pool 1
-resource "azurerm_kubernetes_cluster_node_pool" "pool_1" {
-  name                   = "pool1"
-  kubernetes_cluster_id  = azurerm_kubernetes_cluster.aks_cluster.id
-  vm_size                = "Standard_DS3_v2"  # Change this to another instance type
-  node_count             = 1
-  max_pods               = 30
-  os_type                = "Linux"
-  mode                   = "User"
-}
-
-# Additional Node Pool 2
-resource "azurerm_kubernetes_cluster_node_pool" "pool_2" {
-  name                   = "pool2"
-  kubernetes_cluster_id  = azurerm_kubernetes_cluster.aks_cluster.id
-  vm_size                = "Standard_F4s_v2"  # Another different instance type
-  node_count             = 1
-  max_pods               = 30
-  os_type                = "Linux"
-  mode                   = "User"
-}
-
 # Output Kubernetes Config
 output "kube_config" {
   sensitive = true
@@ -63,21 +41,22 @@ output "kube_config" {
 
 # Configure Kubernetes provider using the kubeconfig
 provider "kubernetes" {
-  config_path = "~/.kube_config.yaml"
+  config_path = "/Users/zhinanwang/.kube_config.yaml"
 }
 
 # Configure Helm provider using the same kubeconfig
 provider "helm" {
   kubernetes {
-    config_path = "~/.kube_config.yaml"
+    config_path = "/Users/zhinanwang/.kube_config.yaml"
   }
 }
 
 # Save kubeconfig to a local file to use with Kubernetes and Helm providers
 resource "local_file" "kubeconfig" {
   content  = azurerm_kubernetes_cluster.aks_cluster.kube_config_raw
-  filename = "~/.kube_config.yaml"
+  filename = "/Users/zhinanwang/.kube_config.yaml"
 }
+
 # Helm deployment of the service on default node pool using the local chart
 resource "helm_release" "chat_service_default" {
   name  = "chat-service-default"
@@ -85,36 +64,10 @@ resource "helm_release" "chat_service_default" {
 
   set {
     name  = "nodeSelector.agentpool"
-    value = "default"  # Matches the label for the default node pool
+    value = "default"
   }
 
   depends_on = [azurerm_kubernetes_cluster.aks_cluster, local_file.kubeconfig]
-}
-
-# Helm deployment of the service on pool1 node pool using the local chart
-resource "helm_release" "chat_service_pool1" {
-  name  = "chat-service-pool1"
-  chart = "./chat-service"  # Path to your local Helm chart
-
-  set {
-    name  = "nodeSelector.agentpool"
-    value = "pool1"  # Matches the label for node pool 1, assuming pool1 nodes are labeled similarly
-  }
-
-  depends_on = [azurerm_kubernetes_cluster_node_pool.pool_1, local_file.kubeconfig]
-}
-
-# Helm deployment of the service on pool2 node pool using the local chart
-resource "helm_release" "chat_service_pool2" {
-  name  = "chat-service-pool2"
-  chart = "./chat-service"  # Path to your local Helm chart
-
-  set {
-    name  = "nodeSelector.agentpool"
-    value = "pool2"  # Matches the label for node pool 2, assuming pool2 nodes are labeled similarly
-  }
-
-  depends_on = [azurerm_kubernetes_cluster_node_pool.pool_2, local_file.kubeconfig]
 }
 
 resource "kubernetes_secret" "acr_auth" {
