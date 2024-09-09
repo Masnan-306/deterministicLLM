@@ -4,8 +4,8 @@ import json
 import os
 
 # Specify the region and DNS name for the configuration
-region = "local"
-dns_name = "localhost"
+region = "eastus"
+dns_name = "20.246.187.212"
 tsv_filename = f"outputs/results_{region}_{dns_name}.tsv"
 
 def print_progress_bar(iteration, total, prefix='', suffix='', decimals=1, length=50, fill='█'):
@@ -21,7 +21,7 @@ def print_progress_bar(iteration, total, prefix='', suffix='', decimals=1, lengt
 
 def send_request(input_message):
     """Send a POST request to the FastAPI endpoint with the input message."""
-    url = f"http://{dns_name}:8000/api"  # Adjust to your server URL
+    url = f"http://{dns_name}/api"  # Adjust to your server URL
     try:
         response = requests.post(url, json={"message": input_message})
         if response.status_code == 200:

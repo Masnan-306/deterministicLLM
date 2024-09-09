@@ -1,5 +1,3 @@
-# main.tf - Terraform script for AKS Cluster with heterogeneous instance types
-
 provider "azurerm" {
   features {}
   subscription_id = "36577d1d-abda-49a6-86c8-67d9341c45a5"
@@ -8,7 +6,7 @@ provider "azurerm" {
 # Resource group for AKS
 resource "azurerm_resource_group" "aks_rg" {
   name     = "aksResourceGroup"
-  location = "East US"
+  location = var.location
 }
 
 # AKS Cluster
@@ -41,13 +39,13 @@ output "kube_config" {
 
 # Configure Kubernetes provider using the kubeconfig
 provider "kubernetes" {
-  config_path = "/Users/zhinanwang/.kube_config.yaml"
+  config_path = local_file.kubeconfig.filename
 }
 
 # Configure Helm provider using the same kubeconfig
 provider "helm" {
   kubernetes {
-    config_path = "/Users/zhinanwang/.kube_config.yaml"
+    config_path = local_file.kubeconfig.filename
   }
 }
 
@@ -57,19 +55,15 @@ resource "local_file" "kubeconfig" {
   filename = "/Users/zhinanwang/.kube_config.yaml"
 }
 
-# Helm deployment of the service on default node pool using the local chart
-resource "helm_release" "chat_service_default" {
-  name  = "chat-service-default"
-  chart = "./chat-service"  # Path to your local Helm chart
-
-  set {
-    name  = "nodeSelector.agentpool"
-    value = "default"
+# Null resource to trigger secret recreation
+resource "null_resource" "force_recreate" {
+  # This trigger will update every time Terraform applies, causing the null_resource to always run
+  triggers = {
+    always_run = timestamp()
   }
-
-  depends_on = [azurerm_kubernetes_cluster.aks_cluster, local_file.kubeconfig]
 }
 
+# Kubernetes secret for ACR authentication
 resource "kubernetes_secret" "acr_auth" {
   metadata {
     name      = "acr-auth-secret"
@@ -90,19 +84,61 @@ resource "kubernetes_secret" "acr_auth" {
       }
     })
   }
+
+  # This ensures the secret is recreated whenever the null_resource changes
+  depends_on = [null_resource.force_recreate]
+
+  lifecycle {
+    create_before_destroy = true
+  }
 }
 
-variable "acr_username" {
-  description = "Azure Container Registry username"
-  sensitive   = true
-}
 
-variable "acr_password" {
-  description = "Azure Container Registry password"
-  sensitive   = true
-}
 
-variable "acr_email" {
-  description = "Email associated with Azure Container Registry"
-  sensitive   = true
+# Helm deployment of the service on default node pool using the local chart
+resource "helm_release" "chat_service_default" {
+  name  = "chat-service-default"
+  chart = "./chat-service"  # Path to your local Helm chart
+
+  set {
+    name  = "image.repository"
+    value = "${var.image_repository_name}.azurecr.io/chat_service"
+  }
+
+  set {
+    name  = "image.tag"
+    value = var.image_tag
+  }
+
+  set {
+    name  = "imagePullSecret"
+    value = var.image_pull_secret
+  }
+
+  set {
+    name  = "replicaCount"
+    value = var.replica_count
+  }
+
+  set {
+    name  = "service.type"
+    value = var.service_type
+  }
+
+  set {
+    name  = "service.port"
+    value = var.service_port
+  }
+
+  set {
+    name  = "service.targetPort"
+    value = var.service_target_port
+  }
+
+  set {
+    name  = "nodeSelector.agentpool"
+    value = var.node_selector_agentpool
+  }
+
+  depends_on = [azurerm_kubernetes_cluster.aks_cluster, local_file.kubeconfig]
 }
