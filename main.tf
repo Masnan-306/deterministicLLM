@@ -76,7 +76,7 @@ resource "kubernetes_secret" "acr_auth" {
   data = {
     ".dockerconfigjson" = jsonencode({
       auths = {
-        "deterministicchatservicee.azurecr.io" = {
+        "${var.image_repository_name}.azurecr.io" = {
           "username" = var.acr_username
           "password" = var.acr_password
           "email"    = var.acr_email

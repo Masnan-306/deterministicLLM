@@ -3,10 +3,10 @@ import csv
 import json
 import os
 
-# Specify the region and DNS name for the configuration
-region = "eastus"
-dns_name = "20.246.187.212"
-tsv_filename = f"outputs/results_{region}_{dns_name}.tsv"
+# Specify the REGION and DNS name for the configuration
+REGION = "eastus2"
+IP_ADDRESS = "172.175.45.138"
+tsv_filename = f"outputs/results_{REGION}_{IP_ADDRESS}.tsv"
 
 def print_progress_bar(iteration, total, prefix='', suffix='', decimals=1, length=50, fill='█'):
     """
@@ -21,19 +21,10 @@ def print_progress_bar(iteration, total, prefix='', suffix='', decimals=1, lengt
 
 def send_request(input_message):
     """Send a POST request to the FastAPI endpoint with the input message."""
-    url = f"http://{dns_name}/chat"  # Adjust to your server URL
+    url = f"http://{IP_ADDRESS}/chat"  # Adjust to your server URL
     try:
         response = requests.post(url, json={"message": input_message})
-        if response.status_code == 200:
-            # Extract the text from the first choice in the response
-            response_data = response.json()
-            choices = response_data.get("choices", [])
-            if choices and isinstance(choices, list):
-                return choices[0].get("text", "No text found")
-            else:
-                return "No choices found in response"
-        else:
-            return f"Error: {response.status_code}"
+        return response.json()
     except requests.exceptions.RequestException as e:
         return f"Request failed: {str(e)}"
 
@@ -53,6 +44,8 @@ def process_input_messages(input_file, output_tsv):
                 writer.writerow([input_message, escaped_response])
     
     print(f"\nResults saved to {output_tsv}")
+
+
 
 if __name__ == "__main__":
     input_file = os.path.join(os.path.dirname(__file__), 'input_messages.txt')

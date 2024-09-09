@@ -19,34 +19,20 @@ class LLMPrompt(BaseModel):
             )
         return v
 
-# Define response models
-class Choice(BaseModel):
-    text: str = "Beep boop"
-    index: int = 0
-    logprobs: Optional[str] = "null"
-    finish_reason: str = "stop"
-
-class Usage(BaseModel):
-    prompt_tokens: int = 198
-    completion_tokens: int = 10
-    total_tokens: int = 208
-
-class BaseLlamaResponse(BaseModel):
-    id: str = "cmpl-7fc1be4c-8f5b-4b2f-805f-f8c5086a9fb4"
-    object: str = "text_completion"
-    created: int = 1708459650
-    model: str = "tinyllama-2-1b-miniguanaco.Q2_K.gguf"
-    choices: List[Choice]
-    usage: Usage
-
-async def get_llm_response(message: LLMPrompt, llm: Llama) -> Union[CreateCompletionResponse, Iterator[CreateCompletionResponse]]:
+async def get_llm_response(message: LLMPrompt, llm: Llama):
     system_message = "You are a helpful assistant."
     template = f"""<|system|>
     {system_message}</s>
     <|user|>
     {message.message}</s>
     <|assistant|>"""
-    return llm(template, temperature=0.0, max_tokens=64)
+    llm_response = llm(template, temperature=0.0, max_tokens=64)
+    
+    choices = llm_response.get("choices", [])
+    if choices and isinstance(choices, list):
+        return choices[0].get("text", "No text found")
+    else:
+        return "No choices found in response"
 
 app = FastAPI()
 
@@ -57,7 +43,7 @@ llm = Llama.from_pretrained(
     filename="tinyllama-2-1b-miniguanaco.Q2_K.gguf",
 )
 
-@app.post('/chat', response_model=BaseLlamaResponse)
+@app.post('/chat', response_model=str)
 async def send_llm_response(message: LLMPrompt = Body(...)) -> Union[CreateCompletionResponse, Iterator[CreateCompletionResponse]]:
     print(f"Received message: {message.message}")
     model_output = await get_llm_response(message, llm)

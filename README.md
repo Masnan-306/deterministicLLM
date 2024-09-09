@@ -4,6 +4,7 @@
 - Terraform
 - Docker
 - Helm
+- An ACR repo
 
 ## How to Run the Pipeline
 
@@ -29,7 +30,7 @@
    - Run the test script from the root directory:
 
      ```bash
-     python tests/send_requests.py
+     python test/send_requests.py
      ```
    - This will save a TSV file in the `outputs` directory where the file name should contain the relevant metadata like location and IP.
    
@@ -44,5 +45,5 @@
 
 
    ```bash
-   python tests/compare_tsv.py outputs/file1.tsv outputs/file2.tsv
+   python test/compare_tsv.py outputs/file1.tsv outputs/file2.tsv
    ```

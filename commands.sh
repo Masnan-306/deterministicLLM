@@ -12,7 +12,7 @@ check_exit_status() {
 az acr list --output table
 export TF_VAR_image_repository_name="masnanregistry"
 export TF_VAR_image_tag="v1.0"
-export TF_VAR_location="eastus2"
+export TF_VAR_location="eastus"
 export KUBECONFIG="/Users/zhinanwang/.kube_config.yaml"
 check_exit_status
 
