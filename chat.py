@@ -46,7 +46,7 @@ async def get_llm_response(message: LLMPrompt, llm: Llama) -> Union[CreateComple
     <|user|>
     {message.message}</s>
     <|assistant|>"""
-    return llm(template, temperature=0.0, max_tokens=128)
+    return llm(template, temperature=0.0, max_tokens=64)
 
 app = FastAPI()
 
@@ -57,7 +57,7 @@ llm = Llama.from_pretrained(
     filename="tinyllama-2-1b-miniguanaco.Q2_K.gguf",
 )
 
-@app.post('/api', response_model=BaseLlamaResponse)
+@app.post('/chat', response_model=BaseLlamaResponse)
 async def send_llm_response(message: LLMPrompt = Body(...)) -> Union[CreateCompletionResponse, Iterator[CreateCompletionResponse]]:
     print(f"Received message: {message.message}")
     model_output = await get_llm_response(message, llm)

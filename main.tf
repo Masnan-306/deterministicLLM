@@ -53,6 +53,7 @@ provider "helm" {
 resource "local_file" "kubeconfig" {
   content  = azurerm_kubernetes_cluster.aks_cluster.kube_config_raw
   filename = "/Users/zhinanwang/.kube_config.yaml"
+  file_permission = "0600"
 }
 
 # Null resource to trigger secret recreation
@@ -97,7 +98,7 @@ resource "kubernetes_secret" "acr_auth" {
 
 # Helm deployment of the service on default node pool using the local chart
 resource "helm_release" "chat_service_default" {
-  name  = "chat-service-default"
+  name  = "chat-service"
   chart = "./chat-service"  # Path to your local Helm chart
 
   set {

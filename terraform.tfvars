@@ -1,10 +1,3 @@
-# Azure Container Registry credentials
-location     = "East US"
-
-# Image configuration
-image_repository = "deterministicchatservicee" 
-image_tag        = "v1.0"
-
 # Kubernetes secret for image pull
 image_pull_secret = "acr-auth-secret"
 

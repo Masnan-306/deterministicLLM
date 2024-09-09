@@ -21,7 +21,7 @@ def print_progress_bar(iteration, total, prefix='', suffix='', decimals=1, lengt
 
 def send_request(input_message):
     """Send a POST request to the FastAPI endpoint with the input message."""
-    url = f"http://{dns_name}/api"  # Adjust to your server URL
+    url = f"http://{dns_name}/chat"  # Adjust to your server URL
     try:
         response = requests.post(url, json={"message": input_message})
         if response.status_code == 200:
