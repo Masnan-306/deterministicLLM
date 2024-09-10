@@ -59,3 +59,8 @@ variable "location" {
   description = "Location for Azure resources"
   default     = "East US"
 }
+
+variable "kube_config_path" {
+  description = "Kubernetes config file path"
+  default     = "~/.kube/config"
+}

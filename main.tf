@@ -1,3 +1,12 @@
+terraform {
+  required_providers {
+    azurerm = {
+      source  = "hashicorp/azurerm"
+      version = ">= 3.74.0"
+    }
+  }
+}
+
 provider "azurerm" {
   features {}
   subscription_id = "36577d1d-abda-49a6-86c8-67d9341c45a5"
@@ -52,7 +61,7 @@ provider "helm" {
 # Save kubeconfig to a local file to use with Kubernetes and Helm providers
 resource "local_file" "kubeconfig" {
   content  = azurerm_kubernetes_cluster.aks_cluster.kube_config_raw
-  filename = "/Users/zhinanwang/.kube_config.yaml"
+  filename = var.kube_config_path
   file_permission = "0600"
 }
 

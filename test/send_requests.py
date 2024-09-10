@@ -4,8 +4,8 @@ import json
 import os
 
 # Specify the REGION and DNS name for the configuration
-REGION = "eastus2"
-IP_ADDRESS = "172.175.45.138"
+REGION = "eastus"
+IP_ADDRESS = "51.8.24.242"
 tsv_filename = f"outputs/results_{REGION}_{IP_ADDRESS}.tsv"
 
 def print_progress_bar(iteration, total, prefix='', suffix='', decimals=1, length=50, fill='█'):

@@ -10,10 +10,14 @@ check_exit_status() {
 
 
 az acr list --output table
-export TF_VAR_image_repository_name="masnanregistry"
-export TF_VAR_image_tag="v1.0"
+###################################################
+# TODO: Replace the variables for your own trial  #
+###################################################
+export TF_VAR_image_repository_name="deterministicChatServicee"
+export TF_VAR_image_tag="v2.0"
 export TF_VAR_location="eastus"
-export KUBECONFIG="/Users/zhinanwang/.kube_config.yaml"
+export TF_VAR_kube_config_path="/Users/zhinanwang/.kube/config.yaml"
+export KUBECONFIG=$TF_VAR_kube_config_path
 check_exit_status
 
 az acr login --name $TF_VAR_image_repository_name
@@ -42,6 +46,7 @@ echo "TF_VAR_acr_email set to $TF_VAR_acr_email"
 
 echo "Environment variables are set successfully."
 
+docker login $TF_VAR_image_repository_name.azurecr.io -u $ACR_USERNAME -p $ACR_PASSWORD
 docker build -f Dockerfile -t chat_service --platform=linux/amd64 .
 docker tag chat_service:latest $TF_VAR_image_repository_name.azurecr.io/chat_service:$TF_VAR_image_tag
 docker push $TF_VAR_image_repository_name.azurecr.io/chat_service:$TF_VAR_image_tag
