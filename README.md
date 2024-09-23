@@ -47,3 +47,21 @@
    ```bash
    python test/compare_tsv.py outputs/file1.tsv outputs/file2.tsv
    ```
+
+
+## Useful Dapr Commands
+
+1. Initialize: 
+   ```bash
+   dapr init
+   ```
+
+2. Run leader-follower with Pub/Sub and Statestore locally
+   ```bash
+   dapr run --resources-path ./components/ --app-id leader --app-port 8000 -- uvicorn --port 8000 leader:app
+   dapr run --resources-path ./components/ --app-id f1 --app-port 8001 -- uvicorn --port 8001 follower:app
+
+   helm upgrade --install dapr dapr/dapr --version=1.14 --namespace dapr-system --create-namespace --wait
+   kubectl get pods --namespace dapr-system
+   helm uninstall dapr --namespace dapr-system
+   ```
