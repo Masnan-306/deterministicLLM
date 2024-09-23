@@ -1,0 +1,4 @@
+dapr>=1.14.0a,<1.15.0
+uvicorn
+typing-extensions
+dapr-ext-fastapi
