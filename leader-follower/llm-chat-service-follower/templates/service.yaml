@@ -1,0 +1,16 @@
+# Follower Service (this creates individual services for each follower)
+apiVersion: v1
+kind: Service
+metadata:
+  name: follower-{{ .Values.followers.appIdPrefix }}{{ .Values.followers.replicas }}-service
+  labels:
+    app: follower-{{ .Values.followers.appIdPrefix }}{{ .Values.followers.replicas }}
+spec:
+  type: ClusterIP
+  ports:
+    - port: {{ .Values.followers.appPortStart }}
+      targetPort: {{ .Values.followers.appPortStart }}
+      protocol: TCP
+      name: http
+  selector:
+    app: follower-{{ .Values.followers.appIdPrefix }}{{ .Values.followers.replicas }}

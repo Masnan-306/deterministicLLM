@@ -1,0 +1,29 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Values.leader.appId }}
+  labels:
+    app: {{ .Values.leader.appId }}
+spec:
+  replicas: {{ .Values.leader.replicas }}
+  selector:
+    matchLabels:
+      app: {{ .Values.leader.appId }}
+  template:
+    metadata:
+      labels:
+        app: {{ .Values.leader.appId }}
+      annotations:
+        dapr.io/enabled: "{{ .Values.dapr.enabled }}"
+        dapr.io/app-id: "{{ .Values.leader.appId }}"
+        dapr.io/app-port: "{{ .Values.leader.appPort }}"
+        dapr.io/pubsub-component: "{{ .Values.dapr.pubsubComponent }}"
+        dapr.io/state-store: "{{ .Values.dapr.statestoreComponent }}"
+    spec:
+      imagePullSecrets:
+        - name: {{ .Values.imagePullSecret }}
+      containers:
+        - name: {{ .Values.leader.appId }}
+          image: {{ .Values.image.repository }}:{{ .Values.image.tag }}
+          ports:
+            - containerPort: {{ .Values.leader.appPort }}

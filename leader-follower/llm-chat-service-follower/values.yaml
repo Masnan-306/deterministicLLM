@@ -1,0 +1,19 @@
+imagePullSecret: acr-auth-secret
+
+followerImage:
+  repository: deterministicChatServicee.azurecr.io/follower-service
+  tag: v1.2
+
+dapr:
+  enabled: true
+  pubsubComponent: redis
+  statestoreComponent: redis
+
+followers:
+  replicas: 3
+  appIdPrefix: follower
+  appPortStart: 8001
+  daprAppPortStart: 3501
+  daprConfig:
+    pubsub: pubsub
+    statestore: statestore

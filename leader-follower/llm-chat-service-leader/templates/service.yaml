@@ -1,0 +1,16 @@
+# Leader Service
+apiVersion: v1
+kind: Service
+metadata:
+  name: leader-service
+  labels:
+    app: leader
+spec:
+  type: LoadBalancer
+  ports:
+    - port: 8000
+      targetPort: 8000
+      protocol: TCP
+      name: http
+  selector:
+    app: leader

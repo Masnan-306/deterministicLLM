@@ -1,0 +1,27 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: follower-{{ .Values.followers.appIdPrefix }}{{ .Values.followers.replicas }}
+spec:
+  replicas: {{ .Values.followers.replicas }}
+  selector:
+    matchLabels:
+      app: {{ .Values.followers.appIdPrefix }}{{ .Values.followers.replicas }}
+  template:
+    metadata:
+      labels:
+        app: {{ .Values.followers.appIdPrefix }}{{ .Values.followers.replicas }}
+      annotations:
+        dapr.io/enabled: "{{ .Values.dapr.enabled }}"
+        dapr.io/app-id: "{{ .Values.followers.appIdPrefix }}{{ .Values.followers.replicas }}"
+        dapr.io/app-port: "{{ .Values.followers.appPortStart }}"
+        dapr.io/pubsub-component: "{{ .Values.dapr.pubsubComponent }}"
+        dapr.io/state-store: "{{ .Values.dapr.statestoreComponent }}"
+    spec:
+      imagePullSecrets:
+        - name: {{ .Values.imagePullSecret }}
+      containers:
+        - name: follower
+          image: {{ .Values.followerImage.repository }}:{{ .Values.followerImage.tag }}
+          ports:
+            - containerPort: {{ .Values.followers.appPortStart }}

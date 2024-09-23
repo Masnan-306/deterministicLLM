@@ -1,0 +1,19 @@
+image:
+  repository: deterministicChatServicee.azurecr.io/leader-service
+  tag: v1.2
+
+imagePullSecret: acr-auth-secret
+
+dapr:
+  enabled: true
+  pubsubComponent: redis
+  statestoreComponent: redis
+
+leader:
+  replicas: 1
+  appId: leader
+  appPort: 8000
+  daprAppPort: 3500
+  daprConfig:
+    pubsub: pubsub
+    statestore: statestore

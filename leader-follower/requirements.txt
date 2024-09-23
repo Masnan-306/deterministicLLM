@@ -2,3 +2,7 @@ dapr>=1.14.0a,<1.15.0
 uvicorn
 typing-extensions
 dapr-ext-fastapi
+llama-cpp-python==0.2.89
+huggingface-hub
+fastapi
+pydantic
