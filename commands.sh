@@ -46,10 +46,10 @@ echo "TF_VAR_acr_email set to $TF_VAR_acr_email"
 
 echo "Environment variables are set successfully."
 
-docker login $TF_VAR_image_repository_name.azurecr.io -u $ACR_USERNAME -p $ACR_PASSWORD
-docker build -f Dockerfile -t chat_service --platform=linux/amd64 .
-docker tag chat_service:latest $TF_VAR_image_repository_name.azurecr.io/chat_service:$TF_VAR_image_tag
-docker push $TF_VAR_image_repository_name.azurecr.io/chat_service:$TF_VAR_image_tag
+# docker login $TF_VAR_image_repository_name.azurecr.io -u $ACR_USERNAME -p $ACR_PASSWORD
+# docker build -f Dockerfile -t chat_service --platform=linux/amd64 .
+# docker tag chat_service:latest $TF_VAR_image_repository_name.azurecr.io/chat_service:$TF_VAR_image_tag
+# docker push $TF_VAR_image_repository_name.azurecr.io/chat_service:$TF_VAR_image_tag
 check_exit_status
 
 terraform init
