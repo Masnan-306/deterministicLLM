@@ -33,4 +33,4 @@
    - Use tools like Helm or Kubernetes CLI to deploy the Docker image to the AKS cluster, ensuring it runs on a compatible `amd64` platform.
 
 **Collect results**
-   - Parse each line in the file `input.py` and send it as a message to the endpoint deployed. Use `json.dumps` to encode the response string as json object to escape special characters.
+   - Parse each line in the file `input.txt` and send it as a message to the endpoint deployed. Use `json.dumps` to encode the response string as json object to escape special characters.
