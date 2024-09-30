@@ -64,4 +64,9 @@
    helm upgrade --install dapr dapr/dapr --version=1.14 --namespace dapr-system --create-namespace --wait
    kubectl get pods --namespace dapr-system
    helm uninstall dapr --namespace dapr-system
+
+   helm install redis bitnami/redis --set auth.enabled=false --namespace dapr-system
+   kubectl apply -f ./components/
+   helm install llm-chat-service-leader ./llm-chat-service-leader/
+   helm install llm-chat-service-follower ./llm-chat-service-follower/
    ```

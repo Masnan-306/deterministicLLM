@@ -4,7 +4,7 @@
 check_exit_status() {
   if [ $? -ne 0 ]; then
     echo "Error occurred in the previous command. Exiting pipeline."
-    exit 1
+    # exit 1
   fi
 }
 

@@ -12,8 +12,8 @@ dapr:
 followers:
   replicas: 3
   appIdPrefix: follower
-  appPortStart: 8001
-  daprAppPortStart: 3501
+  appPortStart: 8000
+  daprAppPortStart: 3500
   daprConfig:
     pubsub: pubsub
     statestore: statestore
