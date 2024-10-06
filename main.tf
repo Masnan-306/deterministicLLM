@@ -28,7 +28,7 @@ resource "azurerm_kubernetes_cluster" "aks_cluster" {
   default_node_pool {
     name       = "default"
     node_count = 3
-    vm_size    = "Standard_DS2_v2"
+    vm_size    = "Standard_DS2_v2" #Standard_F2as_v6
   }
 
   identity {
@@ -106,49 +106,49 @@ resource "kubernetes_secret" "acr_auth" {
 
 
 # Helm deployment of the service on default node pool using the local chart
-# resource "helm_release" "chat_service_default" {
-#   name  = "chat-service"
-#   chart = "./chat-service"  # Path to your local Helm chart
+resource "helm_release" "chat_service_default" {
+  name  = "chat-service"
+  chart = "./chat-service"  # Path to your local Helm chart
 
-#   set {
-#     name  = "image.repository"
-#     value = "${var.image_repository_name}.azurecr.io/chat_service"
-#   }
+  set {
+    name  = "image.repository"
+    value = "${var.image_repository_name}.azurecr.io/chat_service"
+  }
 
-#   set {
-#     name  = "image.tag"
-#     value = var.image_tag
-#   }
+  set {
+    name  = "image.tag"
+    value = var.image_tag
+  }
 
-#   set {
-#     name  = "imagePullSecret"
-#     value = var.image_pull_secret
-#   }
+  set {
+    name  = "imagePullSecret"
+    value = var.image_pull_secret
+  }
 
-#   set {
-#     name  = "replicaCount"
-#     value = var.replica_count
-#   }
+  set {
+    name  = "replicaCount"
+    value = var.replica_count
+  }
 
-#   set {
-#     name  = "service.type"
-#     value = var.service_type
-#   }
+  set {
+    name  = "service.type"
+    value = var.service_type
+  }
 
-#   set {
-#     name  = "service.port"
-#     value = var.service_port
-#   }
+  set {
+    name  = "service.port"
+    value = var.service_port
+  }
 
-#   set {
-#     name  = "service.targetPort"
-#     value = var.service_target_port
-#   }
+  set {
+    name  = "service.targetPort"
+    value = var.service_target_port
+  }
 
-#   set {
-#     name  = "nodeSelector.agentpool"
-#     value = var.node_selector_agentpool
-#   }
+  set {
+    name  = "nodeSelector.agentpool"
+    value = var.node_selector_agentpool
+  }
 
-#   depends_on = [azurerm_kubernetes_cluster.aks_cluster, local_file.kubeconfig]
-# }
+  depends_on = [azurerm_kubernetes_cluster.aks_cluster, local_file.kubeconfig]
+}
